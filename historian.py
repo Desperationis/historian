@@ -1,8 +1,17 @@
+"""historian
+
+Usage:
+  historian <source> <dest>
+"""
+
+
 from ollama import chat
 from ollama import ChatResponse
 from pydantic import BaseModel
 from hashlib import md5
 from datetime import datetime
+from rich import print
+from docopt import docopt
 import shutil
 import os
 import re
@@ -139,7 +148,7 @@ def extract_date_from_filename(file_path: str):
     return None
 
 
-def move_file_to_sorted_folder(file_path):
+def move_file_to_sorted_folder(file_path, sorted_folder):
     # Extract the date from the filename
     filename = os.path.basename(file_path)
     date_str = filename[:10]  # YYYY_MM_DD
@@ -148,7 +157,7 @@ def move_file_to_sorted_folder(file_path):
     date_obj = datetime.strptime(date_str, "%Y_%m_%d")
     
     # Create the destination folder name
-    dest_folder = f"sorted/{date_obj.year}_{date_obj.month:02d}_{date_obj.strftime('%B').lower()}"
+    dest_folder = f"{sorted_folder}/{date_obj.year}_{date_obj.month:02d}_{date_obj.strftime('%B').lower()}"
     
     # Create the destination folder if it doesn't exist
     os.makedirs(dest_folder, exist_ok=True)
@@ -160,14 +169,18 @@ def move_file_to_sorted_folder(file_path):
 
 
 
-directory = 'zipped_photos/'  # Replace with your desired directory path
-files = find_files(directory, ['.mp4', '.mov', '.MOV', '.jpg', '.JPEG', '.png'])
+args = docopt(__doc__)
+directory = args["source"]
+sorted_folder = args["dest"]
+files = find_files(directory, ['.mp4', '.mov', '.MOV', '.jpg', '.JPEG', '.png', '.PNG', '.MP4'])
 
 for file in files:
     date = extract_date_from_filename(file)
 
+    print("\n")
+
     if date == None:
-        print(f"{file} is not processed.")
+        print(f"[red]{file}[/red] is not processed.")
         out = run_linux_command(f'exiftool -CreateDate -s -s -s "{file}"')
         #out = run_linux_command(f'mediainfo "{file}"')
         date = get_a_date(file, out, "exiftool")
@@ -178,10 +191,10 @@ for file in files:
         print(file)
         print(date)
     else:
-        print("{file} is processed, skipping analysis.")
+        print("[light blue]{file}[/light blue] is processed, skipping analysis.")
 
     if date != None and not (date.year == 0 or date.month == 0 or date.day == 0) and not (date.year == -1 and date.month == -1 and date.day == -1):
-        move_file_to_sorted_folder(file)
+        move_file_to_sorted_folder(file, sorted_folder)
 
 
 
