@@ -157,7 +157,7 @@ def move_file_to_sorted_folder(file_path, sorted_folder):
     date_obj = datetime.strptime(date_str, "%Y_%m_%d")
     
     # Create the destination folder name
-    dest_folder = f"{sorted_folder}/{date_obj.year}_{date_obj.month:02d}_{date_obj.strftime('%B').lower()}"
+    dest_folder = os.path.join(f"{sorted_folder}/", f"{date_obj.year}_{date_obj.month:02d}_{date_obj.strftime('%B').lower()}")
     
     # Create the destination folder if it doesn't exist
     os.makedirs(dest_folder, exist_ok=True)
@@ -188,10 +188,10 @@ def main():
                 continue
 
             file = rename_file(file, date)
+            print(f"The date for this file will be {date}")
             print(file)
-            print(date)
         else:
-            print("[light blue]{file}[/light blue] is processed, skipping analysis.")
+            print(f"[light blue]{file}[/light blue] is processed, skipping analysis.")
 
         if date != None and not (date.year == 0 or date.month == 0 or date.day == 0) and not (date.year == -1 and date.month == -1 and date.day == -1):
             move_file_to_sorted_folder(file, sorted_folder)
