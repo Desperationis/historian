@@ -168,33 +168,33 @@ def move_file_to_sorted_folder(file_path, sorted_folder):
     print(f"Moved {filename} to {dest_folder}")
 
 
+def main():
+    args = docopt(__doc__)
+    directory = args["source"]
+    sorted_folder = args["dest"]
+    files = find_files(directory, ['.mp4', '.mov', '.MOV', '.jpg', '.JPEG', '.png', '.PNG', '.MP4'])
 
-args = docopt(__doc__)
-directory = args["source"]
-sorted_folder = args["dest"]
-files = find_files(directory, ['.mp4', '.mov', '.MOV', '.jpg', '.JPEG', '.png', '.PNG', '.MP4'])
+    for file in files:
+        date = extract_date_from_filename(file)
 
-for file in files:
-    date = extract_date_from_filename(file)
+        print("\n")
 
-    print("\n")
-
-    if date == None:
-        print(f"[red]{file}[/red] is not processed.")
-        out = run_linux_command(f'exiftool -CreateDate -s -s -s "{file}"')
-        #out = run_linux_command(f'mediainfo "{file}"')
-        date = get_a_date(file, out, "exiftool")
         if date == None:
-            continue
+            print(f"[red]{file}[/red] is not processed.")
+            out = run_linux_command(f'exiftool -CreateDate -s -s -s "{file}"')
+            #out = run_linux_command(f'mediainfo "{file}"')
+            date = get_a_date(file, out, "exiftool")
+            if date == None:
+                continue
 
-        file = rename_file(file, date)
-        print(file)
-        print(date)
-    else:
-        print("[light blue]{file}[/light blue] is processed, skipping analysis.")
+            file = rename_file(file, date)
+            print(file)
+            print(date)
+        else:
+            print("[light blue]{file}[/light blue] is processed, skipping analysis.")
 
-    if date != None and not (date.year == 0 or date.month == 0 or date.day == 0) and not (date.year == -1 and date.month == -1 and date.day == -1):
-        move_file_to_sorted_folder(file, sorted_folder)
+        if date != None and not (date.year == 0 or date.month == 0 or date.day == 0) and not (date.year == -1 and date.month == -1 and date.day == -1):
+            move_file_to_sorted_folder(file, sorted_folder)
 
 
 

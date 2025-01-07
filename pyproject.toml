@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "historian"
+version = "1.0.0"
+dependencies = [
+    "ollama==0.4.5",
+    "pydantic==2.10.4",
+    "rich==13.9.4",
+    "docopt==0.6.2"
+]
+description = "Ollama photo organizer"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+]
+
+[project.urls]
+Homepage = "https://github.com/Desperationis/historian"
+Issues = "https://github.com/Desperationis/historian/issues"
+
+[project.scripts]
+historian = "historian:main"
