@@ -70,17 +70,17 @@ def get_filename_with_extension(path) -> str:
     return ''.join(os.path.splitext(os.path.basename(path)))
 
 def get_a_date(filepath: str, metadata: str, name_of_tool: str):
-    filename_has_date = ask_gpt_json('Output {contains_date: bool }' + f' only, where contains_date is either true or false depending on whether the string "{get_filename_with_extension(file)}" contains the date the file was created or not. You should be extremely sure of your answer. Valid dates in files contain the entire year (YYYY), month, and day.', ContainsDate)
+    filename_has_date = ask_gpt_json('Output {contains_date: bool }' + f' only, where contains_date is either true or false depending on whether the string "{get_filename_with_extension(filepath)}" contains the date the file was created or not. You should be extremely sure of your answer. Valid dates in files contain the entire year (YYYY), month, and day.', ContainsDate)
     exiftool_has_date = ask_gpt_json('Output {contains_date: bool }' + f' only, where contains_date is either true or false depending on whether the {name_of_tool} output contains the date the file was created or not. You should be extremely sure of your answer. Valid dates in files contain the entire year (YYYY), month, and day. Here is the {name_of_tool} output:\n\n{metadata}', ContainsDate)
 
     exiftool_date = None
     filename_date = None
 
     if exiftool_has_date.contains_date:
-        exiftool_date = ask_gpt_json(f'Output the date to this question: What date is this file from given this {name_of_tool} output? Answer in JSON ' + 'format {year: int, month: int, day: int}. Here is ' + 'the {name_of_tool} output: \n\n' + out, SpecificDate)
+        exiftool_date = ask_gpt_json(f'Output the date to this question: What date is this file from given this {name_of_tool} output? Answer in JSON ' + 'format {year: int, month: int, day: int}. Here is ' + 'the {name_of_tool} output: \n\n' + metadata, SpecificDate)
 
     if filename_has_date.contains_date:
-        filename_date = ask_gpt_json('Output the date to this question: What date is this file from given only its filename? Answer JSON format {year: int, month: int, day: int}. Here is the filename: \n\n' + get_filename_only(file), SpecificDate)
+        filename_date = ask_gpt_json('Output the date to this question: What date is this file from given only its filename? Answer JSON format {year: int, month: int, day: int}. Here is the filename: \n\n' + get_filename_only(filepath), SpecificDate)
 
     date: SpecificDate = None
 
@@ -93,7 +93,7 @@ def get_a_date(filepath: str, metadata: str, name_of_tool: str):
     elif exiftool_date:
         date = exiftool_date
 
-    print(get_filename_with_extension(file))
+    print(get_filename_with_extension(filepath))
     print(f"filename thinks its {filename_date}")
     print(f"exiftool thinks its {exiftool_date}")
 
@@ -170,8 +170,8 @@ def move_file_to_sorted_folder(file_path, sorted_folder):
 
 def main():
     args = docopt(__doc__)
-    directory = args["source"]
-    sorted_folder = args["dest"]
+    directory = args["<source>"]
+    sorted_folder = args["<dest>"]
     files = find_files(directory, ['.mp4', '.mov', '.MOV', '.jpg', '.JPEG', '.png', '.PNG', '.MP4'])
 
     for file in files:
