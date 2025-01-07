@@ -16,7 +16,7 @@ my_folder/
     ...
 ```
 
-Running `historian.py my_folder sorted/` would look through every file and use its filename or its metadata to turn that messy directory into:
+Running `historian my_folder sorted/` would look through every file and use its filename or its metadata to turn that messy directory into:
 
 ```
 sorted/
@@ -33,10 +33,13 @@ sorted/
 ## Installation and Requirements
 For best results, please have at least 8GB of VRAM for the model used, `dolphin-llama3`:
 1. Install [ollama](https://ollama.com/download)
-2. pip install -r requirements.txt
-3. `sudo apt-get install exiftool`
-
-With that, you're ready to run `historian.py my_folder sorted/`.
+2. `sudo apt-get install exiftool`
+3. Now install the package locally by running:
+```
+python3 -m build .
+pip3 install dist/*.whl
+```
+or run the package with `python3 -m historian`.
 
 ## Specifics
 Using the example above, a file would be moved from `my_folder` to `sorted` if and only if:
