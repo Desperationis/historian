@@ -107,7 +107,7 @@ def rename_file(file_path: str, date: SpecificDate) -> str:
 
     # Generate truncated MD5 hash
     hash_object = md5(name_without_extension.encode())
-    truncated_md5 = hash_object.hexdigest()[:6]
+    truncated_md5 = hash_object.hexdigest()[:15]
 
     # Create new file name
     new_file_name = f"{date.year:04d}_{date.month:02d}_{date.day:02d}_{truncated_md5}{extension}"
@@ -197,7 +197,7 @@ def main():
         print("\n")
 
         def is_processed_file_path(file_path):
-            pattern = r'^\d{4}_\d{2}_\d{2}_[a-zA-Z0-9]{6}\.\w+$'
+            pattern = r'^\d{4}_\d{2}_\d{2}_[a-zA-Z0-9]{15}\.\w+$'
             return bool(re.match(pattern, file_path))
 
         if not is_processed_file_path(file) and date == None:
