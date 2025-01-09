@@ -21,12 +21,12 @@ Running `historian my_folder sorted/` would look through every file and use its 
 ```
 sorted/
     2024_04_april/
-        2022_04_12_d354a6.jpg
+        2022_04_12_d354a6759a82749d.jpg
     2024_05_may/
-        2024_05_06_a3dfa3.mov
-        2024_05_08_a01ba0.jpg
+        2024_05_06_a3dfa327a7f729a9.mov
+        2024_05_08_a01ba01a98d020e0.jpg
     2024_08_april/
-        2025_08_10_198a91.png 
+        2025_08_10_198a9110a87e9020.png 
     ...
 ```
 
