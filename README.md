@@ -1,5 +1,5 @@
 # historian
-historian is a tool to organize PNGs, JPGs, MP4s, and MOVs into folders based on their date. For example, if you had the following:
+historian is a tool to organize PNGs, JPGs, MP4s, MOVs, and any other media type you can imagine into folders based on their date. For example, if you had the following:
 
 ## Example
 ```
