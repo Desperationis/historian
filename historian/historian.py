@@ -125,23 +125,17 @@ def rename_file(file_path: str, date: SpecificDate) -> str:
     return new_file_path
 
 
-def extract_date_from_filename(file_path: str):
-    # Extract the file name from the path
-    file_name = file_path.split('/')[-1]
+def extract_date(filepath):
+    # Extract the filename from the filepath
+    filename = filepath.split('/')[-1]
     
-    # Define the regex pattern for the required format
-    pattern = r"^(\d{4})_(\d{2})_(\d{2})_[a-zA-Z0-9]{6}\.[a-zA-Z0-9]+$"
-    
-    # Match the pattern
-    match = re.match(pattern, file_name)
+    # Match the filename format using regex
+    match = re.match(r'(\d{4}_\d{2}_\d{2})_\w{15}\.\w+$', filename)
     
     if match:
-        year, month, day = map(int, match.groups())
-
-        if (year != 0 and month != 0 and day != 0) and (year != -1 and month != -1 and day != -1):
-            return SpecificDate(year=year, month=month, day=day)
-
-    return None
+        return match.group(1)
+    else:
+        return None
 
 
 def move_file_to_sorted_folder(file_path, sorted_folder):
@@ -193,12 +187,9 @@ def main():
 
     for file in files:
         print("\n")
+        date = extract_date(file)
 
-        def is_processed_file_path(file_path):
-            pattern = r'^\d{4}_\d{2}_\d{2}_[a-zA-Z0-9]{15}\.\w+$'
-            return bool(re.match(pattern, file_path))
-
-        if not is_processed_file_path(file):
+        if date == None:
             print(f"[red]{file}[/red] is not processed.")
             out = run_linux_command(f'exiftool -CreateDate -s -s -s "{file}"')
             #out = run_linux_command(f'mediainfo "{file}"')
@@ -210,7 +201,7 @@ def main():
             print(f"The date for this file will be {date}")
             print(file)
         else:
-            print(f"[light blue]{file}[/light blue] is processed, skipping analysis.")
+            print(f"[cyan]{file}[/cyan] is processed, skipping analysis.")
 
         if date != None and not (date.year == 0 or date.month == 0 or date.day == 0) and not (date.year == -1 and date.month == -1 and date.day == -1):
             move_file_to_sorted_folder(file, sorted_folder)
