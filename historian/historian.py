@@ -113,16 +113,11 @@ def rename_file(file_path: str, date: SpecificDate) -> str:
     new_file_name = f"{date.year:04d}_{date.month:02d}_{date.day:02d}_{truncated_md5}{extension}"
     new_file_path = os.path.join(directory, new_file_name)
 
-    if new_file_path.endswith('.JPEG'):
-        new_file_path = new_file_path.replace('.JPEG', '.jpg')
-    if new_file_path.endswith('.JPG'):
-        new_file_path = new_file_path.replace('.JPG', '.jpg')
-    if new_file_path.endswith('.PNG'):
-        new_file_path = new_file_path.replace('.PNG', '.png')
-    if new_file_path.endswith('.MOV'):
-        new_file_path = new_file_path.replace('.MOV', '.mov')
-    if new_file_path.endswith('.MP4'):
-        new_file_path = new_file_path.replace('.MP4', '.mp4')
+    base, ext = os.path.splitext(new_file_path)
+    new_file_path = base + ext.lower()
+
+    if new_file_path.endswith('.jpeg'):
+        new_file_path = new_file_path.replace('.jpeg', '.jpg')
 
     # Rename the file
     os.rename(file_path, new_file_path)
@@ -172,7 +167,26 @@ def main():
     args = docopt(__doc__)
     directory = args["<source>"]
     sorted_folder = args["<dest>"]
-    files = find_files(directory, ['.mp4', '.mov', '.MOV', '.jpg', '.JPEG', '.png', '.PNG', '.MP4'])
+
+    supported_extensions = [
+        ".mp4",
+        ".mov",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".bmp",
+        ".heic",
+        ".heif",
+        ".webp",
+        ".avi",
+        ".mkv",
+        ".m4a"
+        ]
+    capitalized_ext = [item.upper() for item in supported_extensions]
+    supported_extensions.extend(capitalized_ext)
+    
+    files = find_files(directory, supported_extensions)
 
     for file in files:
         date = extract_date_from_filename(file)
