@@ -192,15 +192,13 @@ def main():
     files = find_files(directory, supported_extensions)
 
     for file in files:
-        date = extract_date_from_filename(file)
-
         print("\n")
 
         def is_processed_file_path(file_path):
             pattern = r'^\d{4}_\d{2}_\d{2}_[a-zA-Z0-9]{15}\.\w+$'
             return bool(re.match(pattern, file_path))
 
-        if not is_processed_file_path(file) and date == None:
+        if not is_processed_file_path(file):
             print(f"[red]{file}[/red] is not processed.")
             out = run_linux_command(f'exiftool -CreateDate -s -s -s "{file}"')
             #out = run_linux_command(f'mediainfo "{file}"')
