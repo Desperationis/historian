@@ -130,10 +130,11 @@ def extract_date(filepath):
     filename = filepath.split('/')[-1]
     
     # Match the filename format using regex
-    match = re.match(r'(\d{4}_\d{2}_\d{2})_\w{15}\.\w+$', filename)
+    match = re.match(r'(\d{4})_(\d{2})_(\d{2})_\w{15}\.\w+$', filename)
     
     if match:
-        return match.group(1)
+        year, month, day = map(int, match.groups())
+        return SpecificDate(year=year, month=month, day=day)
     else:
         return None
 
