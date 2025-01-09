@@ -138,8 +138,9 @@ def extract_date_from_filename(file_path: str):
     if match:
         year, month, day = map(int, match.groups())
 
-        if year != 0 and month != 0 and day != 0:
+        if (year != 0 and month != 0 and day != 0) and (year != -1 and month != -1 and day != -1):
             return SpecificDate(year=year, month=month, day=day)
+
     return None
 
 
@@ -181,7 +182,9 @@ def main():
         ".webp",
         ".avi",
         ".mkv",
-        ".m4a"
+        ".m4a",
+        ".3gp",
+        ".amr"
         ]
     capitalized_ext = [item.upper() for item in supported_extensions]
     supported_extensions.extend(capitalized_ext)
@@ -193,7 +196,11 @@ def main():
 
         print("\n")
 
-        if date == None:
+        def is_processed_file_path(file_path):
+            pattern = r'^\d{4}_\d{2}_\d{2}_[a-zA-Z0-9]{6}\.\w+$'
+            return bool(re.match(pattern, file_path))
+
+        if not is_processed_file_path(file) and date == None:
             print(f"[red]{file}[/red] is not processed.")
             out = run_linux_command(f'exiftool -CreateDate -s -s -s "{file}"')
             #out = run_linux_command(f'mediainfo "{file}"')
