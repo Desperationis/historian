@@ -1,7 +1,13 @@
 # historian
-historian is a tool to organize PNGs, JPGs, MP4s, MOVs, and any other media type you can imagine into folders based on their date. For example, if you had the following:
+
+Organize media files into date-sorted folders. Scans filenames and EXIF metadata using a local LLM (ollama) to extract dates, then moves files into a clean `YYYY_MM_month/` directory structure.
+
+**Default model:** `dolphin-llama3` (requires ~8 GB VRAM)
 
 ## Example
+
+Given a messy folder:
+
 ```
 my_folder/
     chinatown_2024/
@@ -13,58 +19,70 @@ my_folder/
     2022_04_12_29387462.jpg
     Screenshot of August 10th 2025.png
     VID_20240506_92837.MOV
-    ...
 ```
 
-Running `historian my_folder sorted/` would look through every file and use its filename or its metadata to turn that messy directory into:
+Running `historian my_folder sorted/` produces:
 
 ```
 sorted/
-    2024_04_april/
+    2022_04_april/
         2022_04_12_d354a6759a82749d.jpg
     2024_05_may/
         2024_05_06_a3dfa327a7f729a9.mov
         2024_05_08_a01ba01a98d020e0.jpg
-    2024_08_april/
-        2025_08_10_198a9110a87e9020.png 
-    ...
+    2025_08_august/
+        2025_08_10_198a9110a87e9020.png
 ```
 
-## Installation and Requirements
-For best results, please have at least 8GB of VRAM for the model used, `dolphin-llama3`:
-1. Install [ollama](https://ollama.com/download)
-2. `sudo apt-get install exiftool`
-3. Now install the package locally by running:
-```
-python3 -m build .
-pip3 install dist/*.whl
-```
-or run the package with `python3 -m historian`.
+Files that can't be dated are left untouched.
 
-## Specifics
-Using the example above, a file would be moved from `my_folder` to `sorted` if and only if:
-1. Through ollama analysis, the filename contains the date.
-2. Or if the filename doesn't work, look to see if exiftool has the date. 
-
-If neither method contains the date, the file remains untouched. 
-
-However, if one of those methods did contain the date, it gets moved to the correct subdirectory in `sorted` in the following format:
-
-```
-YYYY_MM_DD_XXXXXX.EXT
-```
-
-Where YYYY is the four digit year, MM is the two digit month, DD is the two digit date, and XXXXXX is the trimmed md5 hash of the original filename. The hash only looks at the filename, not the extension:
+## Install
 
 ```bash
-/my/path/IMG_2025_06_01.png # Renamed to 2025_06_01_1eb4b5.png
-/my/path2/IMG_2025_06_01.jpg # Renamed to 2025_06_01_1eb4b5.jpg
-/root/IMG_2025_06_02.jpg # Renamed to 2025_06_02_53d30f.jpg
+bash install.bash
 ```
 
-Finally, if in `my_folder` there was an image that was already in the format YYYY_MM_DD_XXXXXX.EXT exactly, it will simply get moved to `sorted` and not have its hash recalculated.
+This installs system deps (exiftool), builds a Python venv via `uv`, copies the project to `/opt/historian`, and creates a global `historian` command. If ollama is installed it will also pull the `dolphin-llama3` model.
 
+## Requirements
 
+- Linux (Debian/Ubuntu)
+- Python 3.11+
+- [ollama](https://ollama.com/download) with `dolphin-llama3` pulled
+- [uv](https://github.com/astral-sh/uv)
 
+## Run
 
+```bash
+historian <source> <dest>
+```
 
+## How It Works
+
+For each media file in `<source>`:
+
+1. **Filename check** — asks ollama whether the filename contains a date (year, month, day).
+2. **EXIF fallback** — if the filename doesn't work, checks `exiftool` metadata.
+3. **Skip** — if neither method finds a date, the file is left in place.
+
+If a date is found, the file is renamed and moved to `<dest>`:
+
+```
+YYYY_MM_DD_<md5hash>.ext
+```
+
+The hash is derived from the original filename (without extension), so two files with the same name but different extensions get the same hash. Files already in this format are moved directly without re-analysis.
+
+## Dev
+
+```bash
+bash install_requirements.bash   # deps only, no system install
+uv run historian <source> <dest> # run from source
+uv run pytest                    # tests
+```
+
+## Uninstall
+
+```bash
+sudo rm -rf /opt/historian /usr/local/bin/historian
+```
