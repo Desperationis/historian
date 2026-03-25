@@ -32,7 +32,7 @@ rm -rf "$SRC_DIR/dist" "$SRC_DIR/build"
 # --- 3. System dependencies ---
 echo "[3/6] Installing system packages..."
 sudo apt-get update -qq
-sudo apt-get install -y -qq python3 exiftool > /dev/null
+sudo apt-get install -y -qq python3 ffmpeg exiftool curl > /dev/null
 
 # --- 4. Install uv if missing ---
 echo "[4/6] Checking uv..."
@@ -50,13 +50,16 @@ fi
 # --- 5. Copy clean source & build fresh venv ---
 echo "[5/6] Building fresh from source..."
 sudo mkdir -p "$INSTALL_DIR"
-sudo cp -a "$SRC_DIR/." "$INSTALL_DIR/"
-# Clean artifacts from the copy
-sudo find "$INSTALL_DIR" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-sudo find "$INSTALL_DIR" -type f -name "*.pyc" -delete 2>/dev/null || true
-sudo find "$INSTALL_DIR" -type f -name "*.pyo" -delete 2>/dev/null || true
-sudo rm -rf "$INSTALL_DIR/.venv"
-sudo rm -rf "$INSTALL_DIR/.git"
+if command -v rsync &>/dev/null; then
+    sudo rsync -a --exclude='.venv' --exclude='.git' --exclude='__pycache__' --exclude='*.pyc' --exclude='*.pyo' "$SRC_DIR/" "$INSTALL_DIR/"
+else
+    sudo cp -a "$SRC_DIR/." "$INSTALL_DIR/"
+    sudo find "$INSTALL_DIR" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+    sudo find "$INSTALL_DIR" -type f -name "*.pyc" -delete 2>/dev/null || true
+    sudo find "$INSTALL_DIR" -type f -name "*.pyo" -delete 2>/dev/null || true
+    sudo find "$INSTALL_DIR" -type d -name ".venv" -exec rm -rf {} + 2>/dev/null || true
+    sudo find "$INSTALL_DIR" -type d -name ".git" -exec rm -rf {} + 2>/dev/null || true
+fi
 # Own the install dir as the current user so uv runs without issues
 sudo chown -R "$(id -u):$(id -g)" "$INSTALL_DIR"
 
@@ -72,7 +75,9 @@ echo "[6/6] Installing launcher..."
 
 sudo tee "$BIN_LINK" > /dev/null <<LAUNCHER
 #!/usr/bin/env bash
-cd $INSTALL_DIR && exec "$UV_BIN" run historian "\$@"
+UV_BIN="\$(command -v uv 2>/dev/null || echo "\$HOME/.local/bin/uv")"
+[ -x "\$UV_BIN" ] || UV_BIN="$UV_BIN"
+cd "$INSTALL_DIR" && exec "\$UV_BIN" run historian "\$@"
 LAUNCHER
 sudo chmod +x "$BIN_LINK"
 
@@ -80,7 +85,7 @@ sudo chmod +x "$BIN_LINK"
 if command -v ollama &>/dev/null; then
     echo ""
     echo "Ollama detected. Pulling dolphin-llama3 model..."
-    ollama pull dolphin-llama3
+    ollama pull dolphin-llama3 || echo "Warning: could not pull dolphin-llama3. Run 'ollama pull dolphin-llama3' manually."
 else
     echo ""
     echo "NOTE: ollama is not installed. historian requires ollama with the dolphin-llama3 model."
@@ -91,5 +96,5 @@ echo ""
 echo "=== Installed ==="
 echo "  Location:  $INSTALL_DIR (owned by $USER)"
 echo "  Launcher:  $BIN_LINK"
-echo "  Run:       historian <source> <dest>"
-echo "  Sudo:      sudo historian <source> <dest>"
+echo "  Run:       historian sort <source> <dest>"
+echo "             historian compress <folder>"

@@ -1,7 +1,7 @@
 [project]
 name = "historian"
-version = "1.0.7"
-description = "Organize media files into date-sorted folders using ollama"
+version = "2.0.0"
+description = "Organize media files into date-sorted folders and compress videos using H.265"
 readme = "README.md"
 requires-python = ">=3.11"
 classifiers = [

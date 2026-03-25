@@ -1,10 +1,16 @@
 # historian
 
-Organize media files into date-sorted folders. Scans filenames and EXIF metadata using a local LLM (ollama) to extract dates, then moves files into a clean `YYYY_MM_month/` directory structure.
+A media toolkit for organizing files into date-sorted folders and compressing videos.
+
+## Commands
+
+### `historian sort <source> <dest>`
+
+Scans filenames and EXIF metadata using a local LLM (ollama) to extract dates, then moves files into a clean `YYYY_MM_month/` directory structure.
 
 **Default model:** `dolphin-llama3` (requires ~8 GB VRAM)
 
-## Example
+#### Example
 
 Given a messy folder:
 
@@ -21,7 +27,7 @@ my_folder/
     VID_20240506_92837.MOV
 ```
 
-Running `historian my_folder sorted/` produces:
+Running `historian sort my_folder sorted/` produces:
 
 ```
 sorted/
@@ -36,28 +42,7 @@ sorted/
 
 Files that can't be dated are left untouched.
 
-## Install
-
-```bash
-bash install.bash
-```
-
-This installs system deps (exiftool), builds a Python venv via `uv`, copies the project to `/opt/historian`, and creates a global `historian` command. If ollama is installed it will also pull the `dolphin-llama3` model.
-
-## Requirements
-
-- Linux (Debian/Ubuntu)
-- Python 3.11+
-- [ollama](https://ollama.com/download) with `dolphin-llama3` pulled
-- [uv](https://github.com/astral-sh/uv)
-
-## Run
-
-```bash
-historian <source> <dest>
-```
-
-## How It Works
+#### How It Works
 
 For each media file in `<source>`:
 
@@ -73,12 +58,38 @@ YYYY_MM_DD_<md5hash>.ext
 
 The hash is derived from the original filename (without extension), so two files with the same name but different extensions get the same hash. Files already in this format are moved directly without re-analysis.
 
+### `historian compress <folder>`
+
+Recursively compresses video files (`.mp4`, `.mov`) using ffmpeg and H.265. Tracks which files have been processed via EXIF metadata so it's safe to run repeatedly.
+
+- Only replaces the original if the compressed version is at least 20% smaller.
+- Files already at optimal quality are marked and skipped on future runs.
+- Safe to interrupt with Ctrl+C (partial files are cleaned up).
+
+## Install
+
+```bash
+bash install.bash
+```
+
+This installs system deps (ffmpeg, exiftool), builds a Python venv via `uv`, copies the project to `/opt/historian`, and creates a global `historian` command. If ollama is installed it will also pull the `dolphin-llama3` model.
+
+## Requirements
+
+- Linux (Debian/Ubuntu)
+- Python 3.11+
+- ffmpeg (for compress)
+- exiftool
+- [ollama](https://ollama.com/download) with `dolphin-llama3` pulled (for sort)
+- [uv](https://github.com/astral-sh/uv)
+
 ## Dev
 
 ```bash
-bash install_requirements.bash   # deps only, no system install
-uv run historian <source> <dest> # run from source
-uv run pytest                    # tests
+bash install_requirements.bash          # deps only, no system install
+uv run historian sort <source> <dest>   # sort from source
+uv run historian compress <folder>      # compress from source
+uv run pytest                           # tests
 ```
 
 ## Uninstall

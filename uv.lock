@@ -59,7 +59,7 @@ wheels = [
 
 [[package]]
 name = "historian"
-version = "1.0.7"
+version = "2.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "docopt" },
